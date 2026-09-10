@@ -3,1160 +3,210 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>We4you AS — Sentralbord Dashboard 2026</title>
+<title>Sentralbord Dashboard – We4you AS</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <style>
-  :root {
-    --bg-primary: #0a0e1a;
-    --bg-secondary: #111827;
-    --bg-card: #1a2236;
-    --bg-card-alt: #162032;
-    --accent-blue: #3b82f6;
-    --accent-green: #10b981;
-    --accent-yellow: #f59e0b;
-    --accent-red: #ef4444;
-    --accent-purple: #8b5cf6;
-    --accent-cyan: #06b6d4;
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-    --border: #1e3a5f;
-    --border-light: #243656;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    line-height: 1.6;
-    min-height: 100vh;
-  }
-  .header {
-    background: linear-gradient(135deg, #0f1729 0%, #1a2a4a 50%, #0f1729 100%);
-    border-bottom: 1px solid var(--border);
-    padding: 24px 40px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .header-left { display: flex; align-items: center; gap: 16px; }
-  .logo-badge {
-    width: 48px; height: 48px;
-    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px; font-weight: 900; color: white;
-    box-shadow: 0 4px 15px rgba(59,130,246,0.4);
-  }
-  .header-title h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
-  .header-title p { font-size: 13px; color: var(--text-secondary); }
-  .header-right { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-  .badge { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; }
-  .badge-live { background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.3); }
-  .badge-critical { background: rgba(239,68,68,0.15); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
-  .update-time { font-size: 12px; color: var(--text-muted); }
-  .container { max-width: 1400px; margin: 0 auto; padding: 32px 40px; }
-  .section { margin-bottom: 40px; }
-  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-  .section-header h2 { font-size: 18px; font-weight: 600; }
-  .section-icon { font-size: 20px; }
-  .alert { padding: 16px 20px; border-radius: 10px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px; }
-  .alert-critical { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.4); border-left: 4px solid var(--accent-red); }
-  .alert-warning { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); border-left: 4px solid var(--accent-yellow); }
-  .alert-icon { font-size: 18px; margin-top: 2px; }
-  .alert-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
-  .alert-body { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
-  .alert-amount { font-size: 20px; font-weight: 800; color: var(--accent-red); margin-top: 4px; }
-  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
-  .kpi-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
-  .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--card-accent, var(--accent-blue)); }
-  .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
-  .kpi-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 8px; }
-  .kpi-value { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
-  .kpi-sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
-  .kpi-change { font-size: 13px; font-weight: 600; margin-top: 6px; }
-  .change-up { color: var(--accent-green); }
-  .change-down { color: var(--accent-red); }
-  .change-neutral { color: var(--accent-yellow); }
-  .chart-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
-  .chart-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
-  .chart-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
-  .chart-container { position: relative; height: 280px; }
-  .chart-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  @media (max-width: 900px) { .chart-grid-2 { grid-template-columns: 1fr; } }
-  .table-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-  .table-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-  .table-header h3 { font-size: 14px; font-weight: 600; }
-  table { width: 100%; border-collapse: collapse; }
-  th { background: rgba(30,58,95,0.5); padding: 11px 16px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.7px; color: var(--text-muted); font-weight: 600; border-bottom: 1px solid var(--border); }
-  td { padding: 11px 16px; font-size: 13px; border-bottom: 1px solid rgba(30,58,95,0.4); vertical-align: middle; }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(59,130,246,0.05); }
-  .num { text-align: right; font-variant-numeric: tabular-nums; }
-  .bold { font-weight: 700; }
-  .total-row td { background: rgba(59,130,246,0.08); font-weight: 700; border-top: 1px solid var(--border); }
-  .pill { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
-  .pill-green { background: rgba(16,185,129,0.15); color: var(--accent-green); }
-  .pill-yellow { background: rgba(245,158,11,0.15); color: var(--accent-yellow); }
-  .pill-red { background: rgba(239,68,68,0.15); color: var(--accent-red); }
-  .pill-blue { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
-  .traffic-light { display: flex; gap: 8px; align-items: flex-start; padding: 12px 16px; background: var(--bg-card-alt); border-radius: 8px; margin-bottom: 12px; }
-  .tl-dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
-  .tl-green { background: var(--accent-green); box-shadow: 0 0 8px rgba(16,185,129,0.6); }
-  .tl-yellow { background: var(--accent-yellow); box-shadow: 0 0 8px rgba(245,158,11,0.5); }
-  .tl-red { background: var(--accent-red); box-shadow: 0 0 8px rgba(239,68,68,0.6); }
-  .tl-text { font-size: 13px; font-weight: 500; }
-  .progress-bar-wrap { background: rgba(30,58,95,0.5); border-radius: 6px; height: 8px; overflow: hidden; margin-top: 6px; }
-  .progress-bar { height: 100%; border-radius: 6px; }
-  .bar-green { background: linear-gradient(90deg, #10b981, #34d399); }
-  .bar-blue { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
-  .cap-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
-  .cap-card { background: var(--bg-card-alt); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
-  .cap-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; margin: 0 auto 10px; }
-  .cap-name { font-size: 14px; font-weight: 600; }
-  .cap-pct { font-size: 24px; font-weight: 800; color: var(--accent-blue); }
-  .cap-calls { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  @media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
-  .info-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
-  .info-item { background: var(--bg-card-alt); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; flex: 1; min-width: 140px; }
-  .info-item-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-  .info-item-val { font-size: 18px; font-weight: 700; margin-top: 2px; }
-  footer { background: var(--bg-secondary); border-top: 1px solid var(--border); padding: 24px 40px; text-align: center; color: var(--text-muted); font-size: 12px; margin-top: 20px; }
-  footer strong { color: var(--text-secondary); }
-  .verified { color: var(--accent-green); font-size: 11px; font-weight: 600; }
-  .est { color: var(--accent-yellow); font-size: 11px; }
-  .c-green { color: var(--accent-green); }
-  .c-red { color: var(--accent-red); }
-  .c-yellow { color: var(--accent-yellow); }
-  .c-blue { color: var(--accent-blue); }
-  .c-muted { color: var(--text-muted); }
+  :root { --bg:#0f1117;--surface:#1a1d27;--surface2:#222638;--border:#2e3352;--text:#e2e8f0;--muted:#94a3b8;--accent:#6366f1;--green:#22c55e;--red:#ef4444;--yellow:#eab308;--blue:#3b82f6; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px}
+  .container{max-width:1400px;margin:0 auto;padding:24px}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px}
+  .header h1{font-size:22px;font-weight:700;color:#fff}
+  .header .meta{font-size:12px;color:var(--muted);text-align:right;line-height:1.6}
+  .badge-green{background:#16a34a22;color:var(--green);border:1px solid #16a34a44;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:600}
+  .badge-red{background:#dc262622;color:var(--red);border:1px solid #dc262644;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:600}
+  .badge-yellow{background:#ca8a0422;color:var(--yellow);border:1px solid #ca8a0444;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:600}
+  .alert{background:#7f1d1d22;border:1px solid #dc262644;border-radius:8px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:flex-start;gap:12px}
+  .alert-icon{font-size:18px;flex-shrink:0}
+  .alert-body h4{font-size:13px;font-weight:600;color:var(--red);margin-bottom:4px}
+  .alert-body p{font-size:12px;color:var(--muted);line-height:1.5}
+  .alert-info{background:#1e3a5f22;border-color:#3b82f644}
+  .alert-info .alert-body h4{color:var(--blue)}
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+  .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px}
+  .kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px}
+  .kpi-value{font-size:26px;font-weight:700;color:#fff;line-height:1;margin-bottom:6px}
+  .kpi-sub{font-size:12px;color:var(--muted)}
+  .kpi-sub .up{color:var(--green)}.kpi-sub .down{color:var(--red)}
+  .chart-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+  @media(max-width:900px){.chart-row{grid-template-columns:1fr}}
+  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px}
+  .chart-card h3{font-size:14px;font-weight:600;margin-bottom:16px;color:#fff}
+  .chart-wrap{position:relative;height:240px}
+  .table-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:24px}
+  .table-card h3{font-size:14px;font-weight:600;margin-bottom:16px;color:#fff}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;padding:8px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--border)}
+  td{padding:9px 12px;border-bottom:1px solid #1e2235}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:#ffffff06}
+  .text-right{text-align:right}.text-center{text-align:center}
+  .verified{color:var(--green);font-size:11px}
+  .mono{font-family:'Courier New',monospace}
+  .margin-high{color:var(--green);font-weight:600}.margin-mid{color:var(--yellow);font-weight:600}.margin-low{color:var(--red);font-weight:600}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+  @media(max-width:900px){.two-col{grid-template-columns:1fr}}
+  .section-title{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+  .cap-bar-wrap{margin-bottom:12px}
+  .cap-bar-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+  .cap-bar-bg{background:var(--surface2);border-radius:4px;height:8px;overflow:hidden}
+  .cap-bar-fill{height:100%;border-radius:4px;transition:width .6s ease}
+  .fill-green{background:var(--green)}.fill-yellow{background:var(--yellow)}.fill-red{background:var(--red)}
+  .footer{text-align:center;font-size:11px;color:var(--muted);margin-top:32px;padding-top:20px;border-top:1px solid var(--border)}
+  .liquidity-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:700px){.liquidity-grid{grid-template-columns:1fr}}
+  .liq-card{background:var(--surface2);border-radius:8px;padding:16px;text-align:center}
+  .liq-card .liq-label{font-size:11px;color:var(--muted);margin-bottom:6px}
+  .liq-card .liq-value{font-size:20px;font-weight:700}
+  .liq-green{color:var(--green)}.liq-red{color:var(--red)}.liq-yellow{color:var(--yellow)}
 </style>
 </head>
 <body>
-
-<div class="header">
-  <div class="header-left">
-    <div class="logo-badge">W4</div>
-    <div class="header-title">
-      <h1>We4you AS — Sentralbord Dashboard</h1>
-      <p>Regnskapsmessig analyse · Januar–Juni 2026 · Tripletex-verifisert</p>
-    </div>
-  </div>
-  <div class="header-right">
-    <span class="badge badge-critical">⚠️ KRITISK AVVIK</span>
-    <span class="badge badge-live">● LIVE DATA</span>
-    <span class="update-time">Oppdatert: 4. juli 2026</span>
-  </div>
-</div>
-
 <div class="container">
-
-  <!-- CRITICAL ALERT -->
-  <div class="alert alert-critical">
-    <div class="alert-icon">🚨</div>
+  <div class="header">
     <div>
-      <div class="alert-title">KRITISK — Skattebetalingskrav FORFALT (Innkrevingsmyndigheten)</div>
-      <div class="alert-body">Krav datert 10. juni 2026 med forfall 1. juli 2026. Per 4. juli 2026 er dette 3 dager forfalt og ubetalt. Skattebetalingskrav av denne typen kan resultere i tvangsinndrivelse og negativ kredittstatus. Umiddelbar betaling påkrevet.</div>
-      <div class="alert-amount">199 155,00 NOK — Forfalt siden 1. juli 2026 (3 dager)</div>
+      <h1>Sentralbord Dashboard — We4you AS</h1>
+      <div style="margin-top:6px;font-size:12px;color:var(--muted)">Regnskapsperiode: Januar–August 2026 &nbsp;·&nbsp;<span class="badge-green">✓ Tripletex-verifisert</span></div>
+    </div>
+    <div class="meta">Oppdatert <strong>10. september 2026</strong><br>Neste oppdatering: 3. okt 2026<br>Kilde: Tripletex AS</div>
+  </div>
+  <div class="alert alert-info">
+    <div class="alert-icon">✅</div>
+    <div class="alert-body">
+      <h4 style="color:var(--green)">Skattebetalingskrav 199 155 NOK — FRAFALT av Skatteetaten</h4>
+      <p>Kravet på 199 155 NOK er frafalt per 10. september 2026. Ingen ytterligere krav utestående.</p>
     </div>
   </div>
-
-  <!-- KPI CARDS -->
-  <div class="section">
-    <div class="kpi-grid">
-      <div class="kpi-card" style="--card-accent: #3b82f6;">
-        <div class="kpi-label">YTD Inntekt 2026</div>
-        <div class="kpi-value c-blue">2 048 391</div>
-        <div class="kpi-sub">NOK · Jan–Jun · 6 mnd ✓</div>
-        <div class="kpi-change change-up">↑ Tripletex-verifisert</div>
-      </div>
-      <div class="kpi-card" style="--card-accent: #10b981;">
-        <div class="kpi-label">Juni 2026 Inntekt</div>
-        <div class="kpi-value c-green">334 859</div>
-        <div class="kpi-sub">NOK · 71 fakturerte kunder ✓</div>
-        <div class="kpi-change change-up">↑ Best siden mars</div>
-      </div>
-      <div class="kpi-card" style="--card-accent: #10b981;">
-        <div class="kpi-label">YTD Driftsresultat</div>
-        <div class="kpi-value c-green">1 053 192</div>
-        <div class="kpi-sub">NOK ekskl. skattebetalingskrav</div>
-        <div class="kpi-change change-up">51,4 % margin</div>
-      </div>
-      <div class="kpi-card" style="--card-accent: #8b5cf6;">
-        <div class="kpi-label">Aktive Kunder</div>
-        <div class="kpi-value" style="color:#8b5cf6">75+</div>
-        <div class="kpi-sub">AS/SA sentralbordkunder</div>
-        <div class="kpi-change change-up">↑ inkl. nye Q2 2026</div>
-      </div>
-      <div class="kpi-card" style="--card-accent: #f59e0b;">
-        <div class="kpi-label">Kundefordringer (AR)</div>
-        <div class="kpi-value c-yellow">421 971</div>
-        <div class="kpi-sub">NOK · Estimert utestående</div>
-        <div class="kpi-change change-neutral">~85% ikke forfalt</div>
-      </div>
-      <div class="kpi-card" style="--card-accent: #ef4444;">
-        <div class="kpi-label">Leverandørgjeld (AP)</div>
-        <div class="kpi-value c-red">224 796</div>
-        <div class="kpi-sub">NOK · herav 199 155 FORFALT</div>
-        <div class="kpi-change change-down">⚠️ Kritisk avvik</div>
-      </div>
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">YTD Inntekt (Jan–Aug)</div><div class="kpi-value">2 712 376</div><div class="kpi-sub">NOK · <span class="up">49,9 % margin</span></div></div>
+    <div class="kpi-card"><div class="kpi-label">YTD Driftsresultat</div><div class="kpi-value">1 353 473</div><div class="kpi-sub">NOK · 8 måneder</div></div>
+    <div class="kpi-card"><div class="kpi-label">August 2026 Inntekt</div><div class="kpi-value">349 416</div><div class="kpi-sub">NOK · 72 kunder · <span class="up">50,7 % margin</span></div></div>
+    <div class="kpi-card"><div class="kpi-label">August 2026 Resultat</div><div class="kpi-value" style="color:var(--green)">177 091</div><div class="kpi-sub">NOK driftsresultat</div></div>
+    <div class="kpi-card"><div class="kpi-label">Juli 2026 Inntekt</div><div class="kpi-value">314 569</div><div class="kpi-sub">NOK · 68 kunder</div></div>
+    <div class="kpi-card"><div class="kpi-label">Bigin Pipeline</div><div class="kpi-value" style="color:var(--accent)">58 200</div><div class="kpi-sub">NOK/mnd · 18 deals åpne</div></div>
+  </div>
+  <div class="chart-row">
+    <div class="chart-card"><h3>Månedlig inntekt 2026 (NOK)</h3><div class="chart-wrap"><canvas id="revenueChart"></canvas></div></div>
+    <div class="chart-card"><h3>Driftsresultat og margin 2026</h3><div class="chart-wrap"><canvas id="resultChart"></canvas></div></div>
+  </div>
+  <div class="table-card">
+    <h3>Månedlig regnskap 2026 — Tripletex-verifisert</h3>
+    <table>
+      <thead><tr><th>Måned</th><th class="text-right">Inntekt</th><th class="text-right">Kostnad</th><th class="text-right">Resultat</th><th class="text-right">Margin</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Januar 2026</td><td class="text-right mono">399 866</td><td class="text-right mono">157 272</td><td class="text-right mono">242 594</td><td class="text-right margin-high">60,7 %</td><td><span class="verified">✓</span></td></tr>
+        <tr><td>Februar 2026</td><td class="text-right mono">310 265</td><td class="text-right mono">170 877</td><td class="text-right mono">139 388</td><td class="text-right margin-mid">44,9 %</td><td><span class="verified">✓</span></td></tr>
+        <tr><td>Mars 2026</td><td class="text-right mono">350 956</td><td class="text-right mono">174 501</td><td class="text-right mono">176 455</td><td class="text-right margin-mid">50,3 %</td><td><span class="verified">✓</span></td></tr>
+        <tr><td>April 2026</td><td class="text-right mono">345 830</td><td class="text-right mono">164 673</td><td class="text-right mono">181 157</td><td class="text-right margin-high">52,4 %</td><td><span class="verified">✓</span></td></tr>
+        <tr><td>Mai 2026</td><td class="text-right mono">306 615</td><td class="text-right mono">167 922</td><td class="text-right mono">138 693</td><td class="text-right margin-mid">45,2 %</td><td><span class="verified">✓</span></td></tr>
+        <tr><td>Juni 2026</td><td class="text-right mono">334 859</td><td class="text-right mono">159 954</td><td class="text-right mono">174 905</td><td class="text-right margin-high">52,2 %</td><td><span class="verified">✓</span></td></tr>
+        <tr style="background:#1e2030"><td><strong>Juli 2026</strong></td><td class="text-right mono"><strong>314 569</strong></td><td class="text-right mono"><strong>191 378</strong></td><td class="text-right mono"><strong>123 191</strong></td><td class="text-right margin-low"><strong>39,2 %</strong></td><td><span class="verified">✓</span></td></tr>
+        <tr style="background:#1e2030"><td><strong>August 2026</strong></td><td class="text-right mono"><strong>349 416</strong></td><td class="text-right mono"><strong>172 326</strong></td><td class="text-right mono"><strong>177 091</strong></td><td class="text-right margin-high"><strong>50,7 %</strong></td><td><span class="verified">✓</span></td></tr>
+        <tr style="border-top:2px solid var(--accent)"><td><strong>YTD Jan–Aug</strong></td><td class="text-right mono"><strong>2 712 376</strong></td><td class="text-right mono"><strong>1 358 903</strong></td><td class="text-right mono"><strong>1 353 473</strong></td><td class="text-right" style="color:var(--accent);font-weight:700">49,9 %</td><td><span class="badge-green">LIVE</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="table-card">
+    <h3>Likviditetsstatus (per 10. september 2026)</h3>
+    <div class="liquidity-grid" style="margin-bottom:20px">
+      <div class="liq-card"><div class="liq-label">Utestående AR</div><div class="liq-value liq-yellow">Se Tripletex</div><div style="font-size:11px;color:var(--muted);margin-top:4px">Aug-fakturaer forfaller 10.–30. sep</div></div>
+      <div class="liq-card"><div class="liq-label">Skattebetalingskrav</div><div class="liq-value liq-green">✅ FRAFALT</div><div style="font-size:11px;color:var(--muted);margin-top:4px">199 155 NOK frafalt 10. sep 2026</div></div>
+      <div class="liq-card"><div class="liq-label">Netto arbeidskapital</div><div class="liq-value liq-green">+242 172</div><div style="font-size:11px;color:var(--muted);margin-top:4px">NOK — GRØNN status</div></div>
     </div>
   </div>
-
-  <!-- REVENUE + RESULT CHART -->
-  <div class="section">
-    <div class="section-header">
-      <span class="section-icon">📊</span>
-      <h2>Månedlig økonomi — Inntekt, Kostnad og Resultat</h2>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Inntekt vs. Driftskostnader vs. Resultat (NOK)</div>
-      <div class="chart-sub">Alle måneder Tripletex-verifisert ✓ · Driftskostnader ekskl. skattebetalingskrav 199 155 NOK</div>
-      <div class="chart-container">
-        <canvas id="mainChart"></canvas>
-      </div>
-    </div>
-  </div>
-
-  <!-- MONTHLY TABLE -->
-  <div class="section">
-    <div class="section-header">
-      <span class="section-icon">📋</span>
-      <h2>Månedlig resultatsammendrag — Jan–Jun 2026</h2>
-    </div>
-    <div class="table-card">
+  <div class="table-card">
+    <h3>Kapasitetsanalyse</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
       <table>
-        <thead>
-          <tr>
-            <th>Måned</th>
-            <th class="num">Inntekt (NOK)</th>
-            <th class="num">Lønn</th>
-            <th class="num">Leie</th>
-            <th class="num">Telecom</th>
-            <th class="num">Øvrig</th>
-            <th class="num">Totale kostnader</th>
-            <th class="num">Driftsresultat</th>
-            <th class="num">Margin</th>
-            <th>Kilde</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Agent</th><th>Stilling</th><th class="text-right">FTE</th><th class="text-right">Kap./dag</th></tr></thead>
         <tbody>
-          <tr>
-            <td class="bold">Januar 2026</td>
-            <td class="num">399 866</td>
-            <td class="num">83 929</td>
-            <td class="num">18 094</td>
-            <td class="num">27 373</td>
-            <td class="num">27 876</td>
-            <td class="num bold">157 272</td>
-            <td class="num bold c-green">242 594</td>
-            <td class="num bold c-green">60,7 %</td>
-            <td><span class="verified">✓ Tripletex</span></td>
-          </tr>
-          <tr>
-            <td class="bold">Februar 2026</td>
-            <td class="num">310 265</td>
-            <td class="num">80 629</td>
-            <td class="num">18 094</td>
-            <td class="num">27 373</td>
-            <td class="num">44 781</td>
-            <td class="num bold">170 877</td>
-            <td class="num bold c-yellow">139 388</td>
-            <td class="num bold c-yellow">44,9 %</td>
-            <td><span class="verified">✓ Tripletex</span></td>
-          </tr>
-          <tr>
-            <td class="bold">Mars 2026</td>
-            <td class="num">350 956</td>
-            <td class="num">87 641</td>
-            <td class="num">18 094</td>
-            <td class="num">27 316</td>
-            <td class="num">41 450</td>
-            <td class="num bold">174 501</td>
-            <td class="num bold c-green">176 455</td>
-            <td class="num bold c-green">50,3 %</td>
-            <td><span class="verified">✓ Tripletex</span></td>
-          </tr>
-          <tr>
-            <td class="bold">April 2026</td>
-            <td class="num">345 830</td>
-            <td class="num">75 325</td>
-            <td class="num">22 685</td>
-            <td class="num">27 475</td>
-            <td class="num">39 188</td>
-            <td class="num bold">164 673</td>
-            <td class="num bold c-green">181 157</td>
-            <td class="num bold c-green">52,4 %</td>
-            <td><span class="verified">✓ Tripletex</span></td>
-          </tr>
-          <tr>
-            <td class="bold">Mai 2026</td>
-            <td class="num">306 615</td>
-            <td class="num">72 906</td>
-            <td class="num">22 685</td>
-            <td class="num">27 475</td>
-            <td class="num">44 856</td>
-            <td class="num bold">167 922</td>
-            <td class="num bold c-yellow">138 693</td>
-            <td class="num bold c-yellow">45,2 %</td>
-            <td><span class="verified">✓ Tripletex</span></td>
-          </tr>
-          <tr>
-            <td class="bold">Juni 2026</td>
-            <td class="num">334 859</td>
-            <td class="num">67 325</td>
-            <td class="num">22 685</td>
-            <td class="num">26 462</td>
-            <td class="num">43 482</td>
-            <td class="num bold">159 954</td>
-            <td class="num bold c-green">174 905</td>
-            <td class="num bold c-green">52,2 %</td>
-            <td><span class="verified">✓ Tripletex</span></td>
-          </tr>
-          <tr class="total-row">
-            <td class="bold">YTD 2026</td>
-            <td class="num bold c-blue">2 048 391</td>
-            <td class="num bold">467 755</td>
-            <td class="num bold">122 337</td>
-            <td class="num bold">163 474</td>
-            <td class="num bold">241 633</td>
-            <td class="num bold">995 199</td>
-            <td class="num bold c-green">1 053 192</td>
-            <td class="num bold c-green">51,4 %</td>
-            <td><span class="pill pill-blue">6/6</span></td>
-          </tr>
+          <tr><td>Tone</td><td>100 %</td><td class="text-right">1,0</td><td class="text-right">150</td></tr>
+          <tr><td>Leticia Haugen</td><td>100 %</td><td class="text-right">1,0</td><td class="text-right">150</td></tr>
+          <tr><td>Michelle</td><td>60 %</td><td class="text-right">0,6</td><td class="text-right">90</td></tr>
+          <tr><td>Marion</td><td>60 %</td><td class="text-right">0,6</td><td class="text-right">90</td></tr>
+          <tr style="border-top:1px solid var(--border)"><td colspan="3"><strong>Total</strong></td><td class="text-right"><strong>480 / dag</strong></td></tr>
         </tbody>
       </table>
-    </div>
-    <div style="margin-top: 8px; font-size: 12px; color: var(--text-muted);">
-      * Kostnader ekskl. skattebetalingskrav 199 155 NOK (Innkrevingsmyndigheten, forfalt). Inkl. dette: Juni netto -24 250 NOK (-7,2 %).
-      Telecom = Telenor + Zisson + Unifon + TellusTalk. Øvrig = GlobalConnect + Safe4 + ALAITNER + Microsoft + Tripletex + DIN CONTROLLER + Misc.
-    </div>
-  </div>
-
-  <!-- CHARTS ROW -->
-  <div class="section">
-    <div class="chart-grid-2">
-      <div class="chart-card">
-        <div class="chart-title">Kostnadsmix — Snitt Jan–Jun 2026</div>
-        <div class="chart-sub">Andel per kategori av totale driftskostnader (995 199 NOK YTD)</div>
-        <div class="chart-container">
-          <canvas id="costPieChart"></canvas>
-        </div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">Lønnskostnadsutvikling (NOK/mnd)</div>
-        <div class="chart-sub">Bookingkoden AS — faktiske fakturabeløp fra Tripletex ✓</div>
-        <div class="chart-container">
-          <canvas id="loenChart"></canvas>
-        </div>
+      <div style="padding:12px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--muted)">
+        <strong style="color:var(--text)">SLA-mål:</strong> 95 % besvart innen 20 sek<br>
+        <strong style="color:var(--text)">Vaktrotasjon:</strong> Isabell og Geir roterer 07–08 / 16–17<br>
+        <strong style="color:var(--text)">Sist verifisert SLA:</strong> Juni 2026 (86,4 %)<br>
+        <span style="color:var(--yellow)">⚠ Zisson-statistikk jul/aug mangler</span>
       </div>
     </div>
   </div>
-
-  <!-- KOSTNADSOVERSIKT -->
-  <div class="section">
-    <div class="section-header">
-      <span class="section-icon">💰</span>
-      <h2>Kostnadsoversikt — Leverandørfakturaer YTD</h2>
+  <div class="table-card">
+    <h3>Bigin CRM — Pipeline per 10. september 2026</h3>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+      <div style="background:var(--surface2);border-radius:8px;padding:14px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Åpen pipeline</div><div style="font-size:22px;font-weight:700;color:var(--accent)">58 200</div><div style="font-size:11px;color:var(--muted)">NOK/mnd · 18 deals</div></div>
+      <div style="background:var(--surface2);border-radius:8px;padding:14px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Avansert stadium</div><div style="font-size:22px;font-weight:700;color:var(--blue)">26 300</div><div style="font-size:11px;color:var(--muted)">NOK/mnd · Tilbud/Forhandling</div></div>
+      <div style="background:var(--surface2);border-radius:8px;padding:14px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Overforfalte</div><div style="font-size:22px;font-weight:700;color:var(--red)">8 000</div><div style="font-size:11px;color:var(--muted)">NOK/mnd · 3 deals</div></div>
+      <div style="background:var(--surface2);border-radius:8px;padding:14px;text-align:center"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">Vunnet YTD</div><div style="font-size:22px;font-weight:700;color:var(--green)">51 780</div><div style="font-size:11px;color:var(--muted)">NOK/mnd · 10 deals</div></div>
     </div>
-    <div class="table-card">
-      <div class="table-header">
-        <h3>Per kategori og leverandør — Tripletex-verifisert</h3>
-        <span class="pill pill-blue">YTD Jan–Jun 2026</span>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Leverandør / Kategori</th>
-            <th class="num">Jan</th>
-            <th class="num">Feb</th>
-            <th class="num">Mar</th>
-            <th class="num">Apr</th>
-            <th class="num">Mai</th>
-            <th class="num">Jun</th>
-            <th class="num">YTD</th>
-            <th>Type</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="bold">Bookingkoden AS (lønn)</td>
-            <td class="num">83 929</td>
-            <td class="num">80 629</td>
-            <td class="num">87 641</td>
-            <td class="num">75 325</td>
-            <td class="num">72 906</td>
-            <td class="num">67 325</td>
-            <td class="num bold">467 755</td>
-            <td><span class="verified">✓ Tripletex</span></td>
-          </tr>
-          <tr>
-            <td class="bold">Østre Aker vei 17 ANS (leie)</td>
-            <td class="num">18 094</td>
-            <td class="num">18 094</td>
-            <td class="num">18 094</td>
-            <td class="num">22 685</td>
-            <td class="num">22 685</td>
-            <td class="num">22 685</td>
-            <td class="num bold">122 337</td>
-            <td><span class="est">Kvartalsvis</span></td>
-          </tr>
-          <tr>
-            <td>Zisson AS</td>
-            <td class="num">24 300</td>
-            <td class="num">24 300</td>
-            <td class="num">24 300</td>
-            <td class="num">24 300</td>
-            <td class="num">24 300</td>
-            <td class="num">23 746</td>
-            <td class="num bold">145 246</td>
-            <td><span class="verified">✓</span></td>
-          </tr>
-          <tr>
-            <td>Telenor Norge AS</td>
-            <td class="num">17 720</td>
-            <td class="num">17 720</td>
-            <td class="num">20 000</td>
-            <td class="num">17 720</td>
-            <td class="num">17 720</td>
-            <td class="num">18 360</td>
-            <td class="num bold">109 240</td>
-            <td><span class="verified">✓</span></td>
-          </tr>
-          <tr>
-            <td>GlobalConnect AS</td>
-            <td class="num">4 257</td>
-            <td class="num">4 257</td>
-            <td class="num">4 257</td>
-            <td class="num">4 257</td>
-            <td class="num">4 257</td>
-            <td class="num">4 838</td>
-            <td class="num bold">26 123</td>
-            <td><span class="verified">✓</span></td>
-          </tr>
-          <tr>
-            <td>Safe4 Certified Monitoring</td>
-            <td class="num c-muted">—</td>
-            <td class="num">16 905</td>
-            <td class="num c-muted">—</td>
-            <td class="num c-muted">—</td>
-            <td class="num">16 905</td>
-            <td class="num c-muted">—</td>
-            <td class="num bold">33 810</td>
-            <td><span class="est">Halvårlig</span></td>
-          </tr>
-          <tr>
-            <td>ALAITNER MARKETING</td>
-            <td class="num c-muted">—</td>
-            <td class="num c-muted">—</td>
-            <td class="num">11 237</td>
-            <td class="num">11 237</td>
-            <td class="num c-muted">—</td>
-            <td class="num c-muted">—</td>
-            <td class="num bold">22 474</td>
-            <td><span class="est">Markedsføring</span></td>
-          </tr>
-          <tr>
-            <td>Microsoft</td>
-            <td class="num">2 137</td>
-            <td class="num">2 137</td>
-            <td class="num">2 137</td>
-            <td class="num">2 137</td>
-            <td class="num">2 137</td>
-            <td class="num">1 982</td>
-            <td class="num bold">12 667</td>
-            <td><span class="verified">✓</span></td>
-          </tr>
-          <tr>
-            <td>Tripletex AS</td>
-            <td class="num">1 757</td>
-            <td class="num">1 757</td>
-            <td class="num">1 757</td>
-            <td class="num">1 934</td>
-            <td class="num">1 934</td>
-            <td class="num">2 227</td>
-            <td class="num bold">11 366</td>
-            <td><span class="est">Kvartalsvis</span></td>
-          </tr>
-          <tr>
-            <td>TellusTalk AB + Unifon AS</td>
-            <td class="num">2 078</td>
-            <td class="num">2 078</td>
-            <td class="num">2 078</td>
-            <td class="num">2 078</td>
-            <td class="num">2 078</td>
-            <td class="num">2 291</td>
-            <td class="num bold">12 681</td>
-            <td><span class="verified">✓</span></td>
-          </tr>
-          <tr>
-            <td>DIN CONTROLLER AS</td>
-            <td class="num c-muted">—</td>
-            <td class="num c-muted">—</td>
-            <td class="num c-muted">—</td>
-            <td class="num c-muted">—</td>
-            <td class="num c-muted">—</td>
-            <td class="num">12 500</td>
-            <td class="num bold">12 500</td>
-            <td><span class="est">Enkeltoppdrag</span></td>
-          </tr>
-          <tr>
-            <td>Øvrige (Mailmojo, Supabase m.fl.)</td>
-            <td class="num">3 000</td>
-            <td class="num">3 000</td>
-            <td class="num">3 000</td>
-            <td class="num">3 000</td>
-            <td class="num">3 000</td>
-            <td class="num">4 000</td>
-            <td class="num bold">19 000</td>
-            <td><span class="est">Estimat</span></td>
-          </tr>
-          <tr style="background: rgba(239,68,68,0.08);">
-            <td class="bold c-red">⚠️ Innkrevingsmyndigheten (skattebetalingskrav)</td>
-            <td class="num c-muted">—</td>
-            <td class="num c-muted">—</td>
-            <td class="num c-muted">—</td>
-            <td class="num c-muted">—</td>
-            <td class="num c-muted">—</td>
-            <td class="num c-red bold">199 155</td>
-            <td class="num bold c-red">199 155</td>
-            <td><span class="pill pill-red">FORFALT</span></td>
-          </tr>
-          <tr class="total-row">
-            <td class="bold">DRIFTSKOSTNADER EKSKL. SKATTEBETALINGSKRAV</td>
-            <td class="num bold">157 272</td>
-            <td class="num bold">170 877</td>
-            <td class="num bold">174 501</td>
-            <td class="num bold">164 673</td>
-            <td class="num bold">167 922</td>
-            <td class="num bold">159 954</td>
-            <td class="num bold c-blue">995 199</td>
-            <td></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <table>
+      <thead><tr><th>Deal</th><th>Stadium</th><th class="text-right">NOK/mnd</th><th>Frist</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Sensio</td><td>Tilbud sendt</td><td class="text-right mono">8 000</td><td>16.11.2026</td><td><span class="badge-yellow">Varm</span></td></tr>
+        <tr><td>Autosenteret</td><td>Forhandling</td><td class="text-right mono">6 900</td><td>30.09.2026</td><td><span class="badge-yellow">Kritisk frist</span></td></tr>
+        <tr><td>Sørum dekksenter</td><td>Tilbud sendt</td><td class="text-right mono">6 900</td><td>30.09.2026</td><td><span class="badge-yellow">Kritisk frist</span></td></tr>
+        <tr><td>Ringen Bilverksted</td><td>Interessert</td><td class="text-right mono">6 900</td><td>30.09.2026</td><td><span class="badge-yellow">Oppfølging</span></td></tr>
+        <tr><td>Personvernpraktikerne</td><td>Prospekt</td><td class="text-right mono">5 000</td><td>31.08.2026</td><td><span class="badge-red">⚠ Forfalt</span></td></tr>
+        <tr><td>Auto Vest</td><td>Forhandling</td><td class="text-right mono">1 500</td><td>31.08.2026</td><td><span class="badge-red">⚠ Forfalt</span></td></tr>
+        <tr><td>Redflight Aviation</td><td>Interessert</td><td class="text-right mono">1 500</td><td>05.08.2026</td><td><span class="badge-red">⚠ Forfalt</span></td></tr>
+        <tr><td>Kongsberg bilpleiesenter</td><td>Forhandling</td><td class="text-right mono">1 500</td><td>30.09.2026</td><td><span class="badge-yellow">Kritisk frist</span></td></tr>
+        <tr><td>The Dreams</td><td>Tilbud sendt</td><td class="text-right mono">1 500</td><td>30.09.2026</td><td><span class="badge-yellow">Varm</span></td></tr>
+        <tr><td>Øvrige (7 deals)</td><td>Prospekt/Interessert</td><td class="text-right mono">18 500</td><td>Diverse</td><td><span class="badge-yellow">Tidlig fase</span></td></tr>
+        <tr style="border-top:2px solid var(--accent)"><td colspan="2"><strong>Sum åpen pipeline</strong></td><td class="text-right mono"><strong>58 200</strong></td><td colspan="2" style="color:var(--muted);font-size:12px">50 % konvertering → 29 100 NOK/mnd</td></tr>
+      </tbody>
+    </table>
   </div>
-
-  <!-- AR/AP -->
-  <div class="section">
-    <div class="section-header">
-      <span class="section-icon">🏦</span>
-      <h2>Likviditetsstatus — Kundereskontro (AR) og Leverandørreskontro (AP)</h2>
-    </div>
-    <div class="two-col">
-      <div>
-        <div class="table-card">
-          <div class="table-header">
-            <h3>📥 Kundereskontro (AR)</h3>
-            <span class="pill pill-yellow">≈ 421 971 NOK</span>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Kunde</th>
-                <th>Batch</th>
-                <th class="num">Beløp (NOK)</th>
-                <th>Forfallsdato</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="bold">Compass Group Norge (Jun)</td>
-                <td>30. jun</td>
-                <td class="num">43 450,00</td>
-                <td>30. jul</td>
-                <td><span class="pill pill-yellow">Ikke forfalt</span></td>
-              </tr>
-              <tr>
-                <td>Compass Group Norge (Mai)</td>
-                <td>31. mai</td>
-                <td class="num">43 062,50</td>
-                <td>30. jun</td>
-                <td><span class="pill pill-red">Forfalt 4 dager</span></td>
-              </tr>
-              <tr>
-                <td>Allskog SA (Jun)</td>
-                <td>30. jun</td>
-                <td class="num">18 750,00</td>
-                <td>30. jul</td>
-                <td><span class="pill pill-yellow">Ikke forfalt</span></td>
-              </tr>
-              <tr>
-                <td>Krøderen Renovasjon (Jun)</td>
-                <td>30. jun</td>
-                <td class="num">18 475,00</td>
-                <td>30. jul</td>
-                <td><span class="pill pill-yellow">Ikke forfalt</span></td>
-              </tr>
-              <tr>
-                <td>Philips AS (Mai)</td>
-                <td>31. mai</td>
-                <td class="num">13 262,50</td>
-                <td>30. jun</td>
-                <td><span class="pill pill-red">Forfalt 4 dager</span></td>
-              </tr>
-              <tr>
-                <td>Element Logic Sweden AB</td>
-                <td>1. jun</td>
-                <td class="num">8 880,00</td>
-                <td>1. jul</td>
-                <td><span class="pill pill-red">Forfalt 3 dager</span></td>
-              </tr>
-              <tr>
-                <td>Caverion Norge AS (Mai)</td>
-                <td>31. mai</td>
-                <td class="num">5 392,50</td>
-                <td>30. jun</td>
-                <td><span class="pill pill-red">Forfalt</span></td>
-              </tr>
-              <tr>
-                <td>+ ~65 øvrige juni-kunder</td>
-                <td>30. jun</td>
-                <td class="num">~270 699</td>
-                <td>30. jul</td>
-                <td><span class="pill pill-yellow">Ikke forfalt</span></td>
-              </tr>
-              <tr class="total-row">
-                <td class="bold" colspan="2">TOTAL AR</td>
-                <td class="num bold c-yellow">≈ 421 971</td>
-                <td></td>
-                <td><span class="pill pill-yellow">~15% forfalt</span></td>
-              </tr>
-            </tbody>
-          </table>
+  <div class="table-card">
+    <h3>Inntektsbehov — Marion lønn øker til 688 000 NOK/år</h3>
+    <div style="background:var(--surface2);border-radius:8px;padding:16px;margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:8px">Marions andel: 18,75 % av Bookingkoden AS-faktura aug 2026 (54 230 NOK). Ny lønn: 688 000/år = 57 333 NOK/mnd.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+        <div>
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Lønnskostnad Marion</div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px"><span style="color:var(--muted)">Nåværende (est.)</span><span class="mono">10 168 NOK/mnd</span></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px;font-weight:600"><span style="color:var(--yellow)">Ny lønn</span><span class="mono" style="color:var(--yellow)">57 333 NOK/mnd</span></div>
+          <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:6px;font-size:13px"><span style="color:var(--red)">Økning per mnd</span><span class="mono" style="color:var(--red);font-weight:700">+47 165 NOK</span></div>
         </div>
-      </div>
-
-      <div>
-        <div class="table-card">
-          <div class="table-header">
-            <h3>📤 Leverandørreskontro (AP)</h3>
-            <span class="pill pill-red">224 796 NOK</span>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Leverandør</th>
-                <th class="num">Beløp (NOK)</th>
-                <th>Forfall</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr style="background: rgba(239,68,68,0.08);">
-                <td class="bold c-red">⚠️ Innkrevingsmyndigheten</td>
-                <td class="num bold c-red">199 155,00</td>
-                <td class="c-red bold">1. jul 2026</td>
-                <td><span class="pill pill-red">FORFALT 3 DAGER</span></td>
-              </tr>
-              <tr>
-                <td>Zisson AS</td>
-                <td class="num">24 160,03</td>
-                <td>1. jul 2026</td>
-                <td><span class="pill pill-red">Forfalt 3 dager</span></td>
-              </tr>
-              <tr>
-                <td>Unifon AS</td>
-                <td class="num">1 252,25</td>
-                <td>1. jul 2026</td>
-                <td><span class="pill pill-red">Forfalt 3 dager</span></td>
-              </tr>
-              <tr>
-                <td>Supabase</td>
-                <td class="num">229,11</td>
-                <td>27. jun 2026</td>
-                <td><span class="pill pill-red">Forfalt 7 dager</span></td>
-              </tr>
-              <tr class="total-row">
-                <td class="bold">TOTAL AP</td>
-                <td class="num bold c-red">224 796</td>
-                <td></td>
-                <td><span class="pill pill-red">100% forfalt</span></td>
-              </tr>
-            </tbody>
-          </table>
-          <div style="padding: 16px; border-top: 1px solid var(--border);">
-            <div class="traffic-light">
-              <div class="tl-dot tl-yellow"></div>
-              <div class="tl-text">
-                <strong>Netto arbeidskapital: +197 175 NOK</strong>
-                <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">AR 421 971 − AP 224 796 = Positiv netto. Men skattebetalingskravet 199 155 NOK er juridisk prioritert og forfalt — must-pay umiddelbart.</div>
-              </div>
-            </div>
-          </div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Revidert kostnadsbilde</div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px"><span style="color:var(--muted)">Nåværende totalkostnad</span><span class="mono">172 326 NOK</span></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px"><span style="color:var(--red)">Lønnsøkning</span><span class="mono" style="color:var(--red)">+47 165 NOK</span></div>
+          <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:6px;font-size:13px;font-weight:700"><span>Ny totalkostnad</span><span class="mono" style="color:var(--yellow)">219 491 NOK</span></div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Effekt uten ny omsetning</div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px"><span style="color:var(--muted)">Nåværende margin</span><span class="mono" style="color:var(--green)">50,7 %</span></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px"><span style="color:var(--muted)">Ny margin</span><span class="mono" style="color:var(--red);font-weight:700">37,2 %</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:var(--muted)">Resultatfall</span><span class="mono" style="color:var(--red)">−47 165 NOK/mnd</span></div>
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- TOP CUSTOMERS -->
-  <div class="section">
-    <div class="section-header">
-      <span class="section-icon">🏆</span>
-      <h2>Topp 15 kunder — Juni 2026</h2>
-    </div>
-    <div class="table-card">
-      <div class="table-header">
-        <h3>Fakturert beløp — 30. juni 2026 batch</h3>
-        <span class="pill pill-green">71 kunder totalt · 334 859 NOK</span>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Kunde</th>
-            <th class="num">Juni (NOK)</th>
-            <th class="num">Andel juni</th>
-            <th>Type</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="bold c-yellow">1</td>
-            <td class="bold">Compass Group Norge AS</td>
-            <td class="num bold">43 450,00</td>
-            <td class="num">13,0 %</td>
-            <td><span class="pill pill-red">Storokunde</span></td>
-          </tr>
-          <tr>
-            <td class="bold c-yellow">2</td>
-            <td>Allskog SA</td>
-            <td class="num">18 750,00</td>
-            <td class="num">5,6 %</td>
-            <td><span class="pill pill-blue">Fast</span></td>
-          </tr>
-          <tr>
-            <td class="bold c-yellow">3</td>
-            <td>Krøderen Renovasjon IKS</td>
-            <td class="num">18 475,00</td>
-            <td class="num">5,5 %</td>
-            <td><span class="pill pill-blue">Fast</span></td>
-          </tr>
-          <tr>
-            <td>4</td>
-            <td>Philips AS</td>
-            <td class="num">13 262,50</td>
-            <td class="num">4,0 %</td>
-            <td><span class="pill pill-blue">Fast</span></td>
-          </tr>
-          <tr>
-            <td>5</td>
-            <td>Digital Media Group AS</td>
-            <td class="num">9 283,75</td>
-            <td class="num">2,8 %</td>
-            <td><span class="pill pill-green">Voksende</span></td>
-          </tr>
-          <tr>
-            <td>6</td>
-            <td>Promon AS</td>
-            <td class="num">9 262,50</td>
-            <td class="num">2,8 %</td>
-            <td><span class="pill pill-blue">Fast</span></td>
-          </tr>
-          <tr>
-            <td>7</td>
-            <td>Foma Norge AS</td>
-            <td class="num">8 786,25</td>
-            <td class="num">2,6 %</td>
-            <td><span class="pill pill-blue">Fast</span></td>
-          </tr>
-          <tr>
-            <td>8</td>
-            <td>Rambøll Norge AS</td>
-            <td class="num">8 740,00</td>
-            <td class="num">2,6 %</td>
-            <td><span class="pill pill-blue">Fast</span></td>
-          </tr>
-          <tr>
-            <td>9</td>
-            <td>Trafikkskolen Driver AS</td>
-            <td class="num">7 661,25</td>
-            <td class="num">2,3 %</td>
-            <td><span class="pill pill-blue">Fast</span></td>
-          </tr>
-          <tr>
-            <td>10</td>
-            <td>Dekkteam AS</td>
-            <td class="num">7 001,25</td>
-            <td class="num">2,1 %</td>
-            <td><span class="pill pill-blue">Fast</span></td>
-          </tr>
-          <tr>
-            <td>11</td>
-            <td>Caverion Norge AS</td>
-            <td class="num">6 643,75</td>
-            <td class="num">2,0 %</td>
-            <td><span class="pill pill-blue">Fast</span></td>
-          </tr>
-          <tr>
-            <td>12</td>
-            <td>First Mover AS</td>
-            <td class="num">6 273,75</td>
-            <td class="num">1,9 %</td>
-            <td><span class="pill pill-blue">Fast</span></td>
-          </tr>
-          <tr>
-            <td>13</td>
-            <td>Fit4 AS</td>
-            <td class="num">6 050,00</td>
-            <td class="num">1,8 %</td>
-            <td><span class="pill pill-blue">Fast</span></td>
-          </tr>
-          <tr>
-            <td>14</td>
-            <td>Dental Sør AS</td>
-            <td class="num">6 075,00</td>
-            <td class="num">1,8 %</td>
-            <td><span class="pill pill-blue">Fast</span></td>
-          </tr>
-          <tr>
-            <td>15</td>
-            <td>Klinikk Øre-Nese-Hals</td>
-            <td class="num">5 612,50</td>
-            <td class="num">1,7 %</td>
-            <td><span class="pill pill-blue">Fast</span></td>
-          </tr>
-          <tr class="total-row">
-            <td colspan="2" class="bold">Topp 15 subtotal</td>
-            <td class="num bold">175 072</td>
-            <td class="num bold">52,3 %</td>
-            <td></td>
-          </tr>
-        </tbody>
-      </table>
+    <table>
+      <thead><tr><th>Scenario</th><th class="text-right">Krevd inntekt/mnd</th><th class="text-right">Økning</th><th class="text-right">Nye kunder</th><th>Merknad</th></tr></thead>
+      <tbody>
+        <tr><td><strong>A — Samme driftsresultat</strong></td><td class="text-right mono"><strong>396 582</strong></td><td class="text-right mono" style="color:var(--yellow)">+47 166 (+13,5 %)</td><td class="text-right mono">~10</td><td style="color:var(--muted);font-size:12px">Margin 44,6 % — resultat uendret</td></tr>
+        <tr><td><strong>B — Samme margin (50,7 %)</strong></td><td class="text-right mono"><strong>445 213</strong></td><td class="text-right mono" style="color:var(--red)">+95 797 (+27,4 %)</td><td class="text-right mono">~19</td><td style="color:var(--muted);font-size:12px">Pipeline kan bidra</td></tr>
+        <tr><td>C — Break even</td><td class="text-right mono">219 491</td><td class="text-right mono" style="color:var(--green)">Allerede over</td><td class="text-right mono">—</td><td style="color:var(--muted);font-size:12px">Dagens inntekt dekker</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:12px;padding:12px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);border-radius:8px;font-size:12px;color:var(--muted)">
+      <strong style="color:var(--accent)">Konklusjon:</strong> Scenario A dekkes dersom ~80 % av avanserte deals (26 300 NOK) konverterer. Bekreft eksakt lønnsdelta med lønnsslippen.
     </div>
   </div>
-
-  <!-- CAPACITY -->
-  <div class="section">
-    <div class="section-header">
-      <span class="section-icon">👥</span>
-      <h2>Bemanningsanalyse og kapasitet</h2>
-    </div>
-
-    <div class="cap-grid" style="margin-bottom: 24px;">
-      <div class="cap-card">
-        <div class="cap-avatar">M</div>
-        <div class="cap-name">Michelle</div>
-        <div class="cap-pct">60 %</div>
-        <div class="cap-calls">90 samtaler/dag · 4,8 t</div>
-        <div style="margin-top:8px;"><div class="progress-bar-wrap"><div class="progress-bar bar-blue" style="width:60%"></div></div></div>
-      </div>
-      <div class="cap-card">
-        <div class="cap-avatar">T</div>
-        <div class="cap-name">Tone</div>
-        <div class="cap-pct">100 %</div>
-        <div class="cap-calls">150 samtaler/dag · 8 t</div>
-        <div style="margin-top:8px;"><div class="progress-bar-wrap"><div class="progress-bar bar-green" style="width:100%"></div></div></div>
-      </div>
-      <div class="cap-card">
-        <div class="cap-avatar">M</div>
-        <div class="cap-name">Marion</div>
-        <div class="cap-pct">60 %</div>
-        <div class="cap-calls">90 samtaler/dag · 4,8 t</div>
-        <div style="margin-top:8px;"><div class="progress-bar-wrap"><div class="progress-bar bar-blue" style="width:60%"></div></div></div>
-      </div>
-      <div class="cap-card" style="border-color: rgba(16,185,129,0.4);">
-        <div class="cap-avatar" style="background: linear-gradient(135deg, #10b981, #06b6d4);">L</div>
-        <div class="cap-name">Leticia Haugen</div>
-        <div class="cap-pct" style="color: var(--accent-green);">100 %</div>
-        <div class="cap-calls">150 samtaler/dag · fra jun 2026</div>
-        <div style="margin-top:8px;"><div class="progress-bar-wrap"><div class="progress-bar bar-green" style="width:100%"></div></div></div>
-      </div>
-      <div class="cap-card" style="border-color: rgba(245,158,11,0.3);">
-        <div class="cap-avatar" style="background: linear-gradient(135deg, #f59e0b, #ef4444);">G/I</div>
-        <div class="cap-name">Geir / Isabell</div>
-        <div class="cap-pct" style="color: var(--accent-yellow); font-size:18px;">Vakt</div>
-        <div class="cap-calls">07–08 og 16–17 · Ukentlig rotasjon</div>
-        <div style="margin-top:4px; font-size:11px; color: var(--text-muted);">A-uke: Geir 16–17, Isabell 07–08</div>
-      </div>
-    </div>
-
-    <div class="two-col">
-      <div class="table-card">
-        <div class="table-header"><h3>📈 Kapasitetsberegning</h3></div>
-        <table>
-          <thead><tr><th>Parameter</th><th class="num">Verdi</th></tr></thead>
-          <tbody>
-            <tr><td>Normkapasitet per agent/dag</td><td class="num">150 samtaler</td></tr>
-            <tr><td>Arbeidsdag (kjerne)</td><td class="num">08:00–16:00 man–fre</td></tr>
-            <tr><td>Arbeidsdager per måned (snitt)</td><td class="num">22 dager</td></tr>
-            <tr style="background: rgba(245,158,11,0.05);">
-              <td class="bold">Jan–Mai (3 agenter: M+T+M)</td>
-              <td class="num bold">330/dag · 7 260/mnd</td>
-            </tr>
-            <tr style="background: rgba(16,185,129,0.05);">
-              <td class="bold c-green">Jun+ (4 agenter: M+T+M+L)</td>
-              <td class="num bold c-green">480/dag · 10 560/mnd</td>
-            </tr>
-            <tr><td>Økning ved Leticias oppstart</td><td class="num c-green">+150/dag (+3 300/mnd)</td></tr>
-            <tr><td>SLA-mål</td><td class="num">95 % besvart ≤ 20 sek</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="table-card">
-        <div class="table-header"><h3>🚀 Kapasitetsutnyttelse og vekstpotensial</h3></div>
-        <table>
-          <thead><tr><th>Scenario</th><th class="num">Verdi</th></tr></thead>
-          <tbody>
-            <tr><td class="bold">Maks kapasitet (jun+)</td><td class="num bold">10 560 samtaler/mnd</td></tr>
-            <tr><td>Estimert faktisk bruk (45–55 %)</td><td class="num">4 750–5 800/mnd</td></tr>
-            <tr>
-              <td class="bold c-green">Ledig kapasitetsbuffer</td>
-              <td class="num bold c-green">~4 760–5 810/mnd</td>
-            </tr>
-            <tr><td>Snitt samtaler per ny kunde</td><td class="num">200–500/mnd</td></tr>
-            <tr style="background: rgba(16,185,129,0.08);">
-              <td class="bold c-green">Plass til nye kunder</td>
-              <td class="num bold c-green">10–25 kunder</td>
-            </tr>
-            <tr><td>Snitt månedlig faktura ny kunde</td><td class="num">3 500–8 000 NOK</td></tr>
-            <tr style="background: rgba(59,130,246,0.08);">
-              <td class="bold c-blue">Potensielt ny inntekt/mnd</td>
-              <td class="num bold c-blue">35 000–200 000 NOK</td>
-            </tr>
-          </tbody>
-        </table>
-        <div style="padding:12px 16px; border-top:1px solid var(--border); font-size:12px; color:var(--text-muted);">
-          * For eksakt utnyttelsesgrad: kjør /SENTRALBORDET for å hente Google Drive-statistikk (samtalelogg).
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- TREND + INFO -->
-  <div class="section">
-    <div class="section-header">
-      <span class="section-icon">📈</span>
-      <h2>Inntektstrender og nøkkeltall</h2>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Månedlig inntekt og driftsresultat — Jan–Jun 2026</div>
-      <div class="chart-sub">Ekskl. skattebetalingskrav — alle tall Tripletex-verifisert ✓</div>
-      <div class="chart-container" style="height: 200px;">
-        <canvas id="trendChart"></canvas>
-      </div>
-    </div>
-    <div class="info-row" style="margin-top: 16px;">
-      <div class="info-item">
-        <div class="info-item-label">Høyeste måned</div>
-        <div class="info-item-val c-green">Jan: 399 866</div>
-      </div>
-      <div class="info-item">
-        <div class="info-item-label">Laveste måned</div>
-        <div class="info-item-val c-yellow">Mai: 306 615</div>
-      </div>
-      <div class="info-item">
-        <div class="info-item-label">Månedlig snitt</div>
-        <div class="info-item-val c-blue">341 399 NOK</div>
-      </div>
-      <div class="info-item">
-        <div class="info-item-label">Høyeste margin</div>
-        <div class="info-item-val c-green">Jan: 60,7 %</div>
-      </div>
-      <div class="info-item">
-        <div class="info-item-label">YTD margin</div>
-        <div class="info-item-val c-blue">51,4 %</div>
-      </div>
-      <div class="info-item">
-        <div class="info-item-label">Leticia-effekt (jun)</div>
-        <div class="info-item-val c-green">+3 300/dag kap.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SLA -->
-  <div class="section">
-    <div class="section-header">
-      <span class="section-icon">📞</span>
-      <h2>Servicenivå (SLA) og vaktdekning</h2>
-    </div>
-    <div class="two-col">
-      <div class="table-card">
-        <div class="table-header"><h3>Vaktplan — Geir og Isabell (roterende)</h3></div>
-        <table>
-          <thead><tr><th>Uke</th><th>07–08</th><th>08–16</th><th>16–17</th></tr></thead>
-          <tbody>
-            <tr><td class="bold">A-uke</td><td>Isabell</td><td>Team (M, T, M, L)</td><td><strong>Geir</strong></td></tr>
-            <tr><td class="bold">B-uke</td><td><strong>Geir</strong></td><td>Team (M, T, M, L)</td><td>Isabell</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="table-card">
-        <div class="table-header"><h3>SLA-mål</h3></div>
-        <table>
-          <thead><tr><th>Parameter</th><th class="num">Mål / Verdi</th></tr></thead>
-          <tbody>
-            <tr><td>Besvaringsgrad</td><td class="num bold c-green">≥ 95 %</td></tr>
-            <tr><td>Svartid</td><td class="num">≤ 20 sekunder</td></tr>
-            <tr><td>Norm per agent per dag</td><td class="num">150 samtaler</td></tr>
-            <tr><td>Total daglig kapasitet (jun+)</td><td class="num c-green bold">480 samtaler/dag</td></tr>
-            <tr><td>Total månedlig kapasitet (jun+)</td><td class="num c-green bold">10 560/mnd</td></tr>
-            <tr><td>Faktisk SLA-statistikk</td><td class="num c-yellow">Hentes via Google Drive (/SENTRALBORDET)</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- PIPELINE -->
-  <div class="section">
-    <div class="section-header">
-      <span class="section-icon">🎯</span>
-      <h2>Pipeline — Bigin CRM</h2>
-    </div>
-    <div class="alert alert-warning">
-      <div class="alert-icon">ℹ️</div>
-      <div>
-        <div class="alert-title">Bigin CRM-data ikke tilgjengelig denne kjøringen</div>
-        <div class="alert-body">Zapier-kobling til Bigin CRM (org: 915563000000023712) var ikke tilgjengelig ved siste kjøring. Alle regnskaps- og kapasitetstall i rapporten er Tripletex-verifisert. Kjør /SENTRALBORDET på nytt for å hente pipeline, eller logg inn på Bigin direkte for å se åpne deals og forfalte frister.</div>
-      </div>
-    </div>
-  </div>
-
+  <div class="footer">We4you AS · Sentralbord-analyse · Oppdatert 10. september 2026 · Tripletex-verifisert jan–aug 2026</div>
 </div>
-
-<footer>
-  <strong>We4you AS — Sentralbord Dashboard 2026</strong> &nbsp;|&nbsp;
-  Generert: 4. juli 2026 &nbsp;|&nbsp;
-  Alle beløp i NOK ekskl. MVA &nbsp;|&nbsp;
-  Inntekter og lønnskostnader: Tripletex-verifisert ✓ &nbsp;|&nbsp;
-  Leie og Tripletex: kvartalsvis amortisert &nbsp;|&nbsp;
-  <strong style="color:var(--accent-red)">⚠️ Skattebetalingskrav 199 155 NOK FORFALT — Umiddelbar betaling påkrevet</strong>
-</footer>
-
 <script>
-Chart.defaults.color = '#94a3b8';
-Chart.defaults.borderColor = 'rgba(30,58,95,0.5)';
-
-// MAIN BAR CHART
-new Chart(document.getElementById('mainChart').getContext('2d'), {
-  type: 'bar',
-  data: {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun'],
-    datasets: [
-      {
-        label: 'Inntekt',
-        data: [399866, 310265, 350956, 345830, 306615, 334859],
-        backgroundColor: 'rgba(59,130,246,0.75)',
-        borderColor: '#3b82f6', borderWidth: 1, borderRadius: 4,
-      },
-      {
-        label: 'Driftskostnader',
-        data: [157272, 170877, 174501, 164673, 167922, 159954],
-        backgroundColor: 'rgba(239,68,68,0.6)',
-        borderColor: '#ef4444', borderWidth: 1, borderRadius: 4,
-      },
-      {
-        label: 'Driftsresultat',
-        data: [242594, 139388, 176455, 181157, 138693, 174905],
-        backgroundColor: 'rgba(16,185,129,0.75)',
-        borderColor: '#10b981', borderWidth: 1, borderRadius: 4,
-      }
-    ]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: {
-      legend: { labels: { color: '#94a3b8', font: { size: 12 } } },
-      tooltip: { callbacks: { label: c => c.dataset.label + ': ' + c.parsed.y.toLocaleString('nb-NO') + ' NOK' } }
-    },
-    scales: {
-      x: { grid: { color: 'rgba(30,58,95,0.4)' }, ticks: { color: '#94a3b8' } },
-      y: { grid: { color: 'rgba(30,58,95,0.4)' }, ticks: { color: '#94a3b8', callback: v => (v/1000).toFixed(0) + 'k' } }
-    }
-  }
-});
-
-// COST PIE
-new Chart(document.getElementById('costPieChart').getContext('2d'), {
-  type: 'doughnut',
-  data: {
-    labels: ['Lønn', 'Leie', 'Zisson', 'Telenor', 'GlobalConnect', 'Safe4', 'ALAITNER', 'Øvrige'],
-    datasets: [{
-      data: [467755, 122337, 145246, 109240, 26123, 33810, 22474, 68214],
-      backgroundColor: [
-        'rgba(59,130,246,0.85)', 'rgba(139,92,246,0.85)', 'rgba(6,182,212,0.85)',
-        'rgba(16,185,129,0.85)', 'rgba(245,158,11,0.85)', 'rgba(239,68,68,0.85)',
-        'rgba(236,72,153,0.85)', 'rgba(148,163,184,0.7)'
-      ],
-      borderColor: '#1a2236', borderWidth: 2
-    }]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: {
-      legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 11 }, boxWidth: 12 } },
-      tooltip: { callbacks: { label: c => c.label + ': ' + c.parsed.toLocaleString('nb-NO') + ' NOK (' + ((c.parsed/995199)*100).toFixed(1) + '%)' } }
-    }
-  }
-});
-
-// LØNN CHART
-new Chart(document.getElementById('loenChart').getContext('2d'), {
-  type: 'bar',
-  data: {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun'],
-    datasets: [{
-      label: 'Lønnskostnader (NOK)',
-      data: [83929, 80629, 87641, 75325, 72906, 67325],
-      backgroundColor: 'rgba(139,92,246,0.75)',
-      borderColor: '#8b5cf6', borderWidth: 1, borderRadius: 4,
-    }]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: {
-      legend: { labels: { color: '#94a3b8', font: { size: 12 } } },
-      tooltip: { callbacks: { label: c => 'Lønn: ' + c.parsed.y.toLocaleString('nb-NO') + ' NOK' } }
-    },
-    scales: {
-      x: { grid: { color: 'rgba(30,58,95,0.4)' }, ticks: { color: '#94a3b8' } },
-      y: { grid: { color: 'rgba(30,58,95,0.4)' }, ticks: { color: '#94a3b8', callback: v => (v/1000).toFixed(0) + 'k' }, min: 50000 }
-    }
-  }
-});
-
-// TREND LINE
-new Chart(document.getElementById('trendChart').getContext('2d'), {
-  type: 'line',
-  data: {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun'],
-    datasets: [
-      {
-        label: 'Inntekt (NOK)',
-        data: [399866, 310265, 350956, 345830, 306615, 334859],
-        borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.12)',
-        fill: true, tension: 0.4, pointBackgroundColor: '#3b82f6', pointRadius: 5, pointHoverRadius: 7,
-      },
-      {
-        label: 'Driftsresultat (NOK)',
-        data: [242594, 139388, 176455, 181157, 138693, 174905],
-        borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.08)',
-        fill: true, tension: 0.4, pointBackgroundColor: '#10b981', pointRadius: 5, pointHoverRadius: 7,
-      }
-    ]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    plugins: {
-      legend: { labels: { color: '#94a3b8', font: { size: 12 } } },
-      tooltip: { callbacks: { label: c => c.dataset.label + ': ' + c.parsed.y.toLocaleString('nb-NO') + ' NOK' } }
-    },
-    scales: {
-      x: { grid: { color: 'rgba(30,58,95,0.4)' }, ticks: { color: '#94a3b8' } },
-      y: { grid: { color: 'rgba(30,58,95,0.4)' }, ticks: { color: '#94a3b8', callback: v => (v/1000).toFixed(0) + 'k' } }
-    }
-  }
-});
+const months=['Jan','Feb','Mar','Apr','Mai','Jun','Jul','Aug'];
+const revenues=[399866,310265,350956,345830,306615,334859,314569,349416];
+const costs=[157272,170877,174501,164673,167922,159954,191378,172326];
+const results=[242594,139388,176455,181157,138693,174905,123191,177091];
+const margins=[60.7,44.9,50.3,52.4,45.2,52.2,39.2,50.7];
+new Chart(document.getElementById('revenueChart').getContext('2d'),{type:'bar',data:{labels:months,datasets:[{label:'Inntekt',data:revenues,backgroundColor:'#6366f188',borderColor:'#6366f1',borderWidth:1,borderRadius:4},{label:'Kostnad',data:costs,backgroundColor:'#ef444444',borderColor:'#ef4444',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#94a3b8'}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y.toLocaleString('nb-NO')} NOK`}}},scales:{x:{grid:{color:'#2e3352'},ticks:{color:'#94a3b8'}},y:{grid:{color:'#2e3352'},ticks:{color:'#94a3b8',callback:v=>(v/1000).toFixed(0)+'k'}}}}});
+new Chart(document.getElementById('resultChart').getContext('2d'),{type:'bar',data:{labels:months,datasets:[{label:'Resultat',data:results,backgroundColor:results.map(r=>r>150000?'#22c55e66':r>120000?'#eab30866':'#ef444466'),borderColor:results.map(r=>r>150000?'#22c55e':r>120000?'#eab308':'#ef4444'),borderWidth:1,borderRadius:4,yAxisID:'y'},{label:'Margin %',data:margins,type:'line',borderColor:'#6366f1',backgroundColor:'transparent',pointBackgroundColor:'#6366f1',pointRadius:4,tension:.3,yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#94a3b8'}},tooltip:{callbacks:{label:c=>c.dataset.label==='Margin %'?`Margin: ${c.parsed.y} %`:`Resultat: ${c.parsed.y.toLocaleString('nb-NO')} NOK`}}},scales:{x:{grid:{color:'#2e3352'},ticks:{color:'#94a3b8'}},y:{grid:{color:'#2e3352'},ticks:{color:'#94a3b8',callback:v=>(v/1000).toFixed(0)+'k'},position:'left'},y1:{grid:{drawOnChartArea:false},ticks:{color:'#6366f1',callback:v=>v+' %'},position:'right',min:0,max:80}}}});
 </script>
 </body>
-</html>
+  </html>
